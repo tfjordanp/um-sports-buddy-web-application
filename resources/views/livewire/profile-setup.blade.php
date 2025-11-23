@@ -7,39 +7,46 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
                 {{-- Use Flux Select for Location --}}
-                <x-flux::select wire:model="countryId" label="Country" placeholder="Select a country" variant="combobox">
+                <flux:select wire:model.live="countryId" label="Country" id="countryId">
+                    <option value="" selected>Select a Country...</option>
+                    <!--<option value="" disabled selected>Select a country</option>-->
                     {{-- Assumes $locations is passed from the component logic --}}
                     @foreach($countries as $country)
-                        <option value="{{ $country->id }}">{{ $country->name }}</option>
+                        <flux:select.option value="{{ $country->id }}">{{ $country->name }}</flux:select.option>
                     @endforeach
-                </x-flux::select>
+                </flux:select>
                 @error('countryId') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
             </div>
-            @if ($countryId != null)
-                <div>
+
+            <div x-data="{ showModal: @entangle('countryId') }">
+                <div x-show="showModal">
                     {{-- Use Flux Select for Location --}}
-                    <x-flux::select wire:model="stateId" label="State" placeholder="Select a state" variant="combobox">
+                    <flux:select wire:model.live="stateId" label="State" id="stateId">
+                        <option value="" selected>Select a State...</option>
+
                         {{-- Assumes $locations is passed from the component logic --}}
                         @foreach($this->queryStates() as $state)
-                            <option value="{{ $state->id }}">{{ $state->name }}</option>
+                            <flux:select.option value="{{ $state->id }}">{{ $state->name }}</flux:select.option>
                         @endforeach
-                    </x-flux::select>
+                    </flux:select>
                     @error('stateId') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                 </div>
-            @endif
-
-            @if ($stateId != null)
-                <div>
+            </div>
+            
+            <div x-data="{ showModal: @entangle('stateId') }">
+                <div x-show="showModal">
                     {{-- Use Flux Select for Location --}}
-                    <x-flux::select wire:model="cityId" label="City" placeholder="Select a city" variant="combobox">
+                    <flux:select wire:model.live="cityId" label="City" id="cityId">
+                        <option value="" selected>Select a City...</option>
+
                         {{-- Assumes $locations is passed from the component logic --}}
                         @foreach($this->queryCities() as $city)
                             <option value="{{ $city->id }}">{{ $city->name }}</option>
                         @endforeach
-                    </x-flux::select>
+                    </flux:select>
                     @error('cityId') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                 </div>
-            @endif
+            </div>
 
             <div>
                 {{-- Use Flux Input for File Upload (Profile Picture) --}}
@@ -72,4 +79,40 @@
             Save and Continue to Events
         </x-flux::button>
     </form>
+
+    @script
+    <script>
+        ['#countryId','#stateId','#cityId'].forEach(id => {
+            if (!document.querySelector(id))    return ;
+            document.querySelector(id).onclick = e => {
+                document.querySelector(id).firstElementChild.disabled = true;
+            }
+        });
+        //console.log('EXEC');
+        $wire.on('didMount', async () => {
+            /*console.log('didMount');
+            ['#countryId','#stateId','#cityId'].forEach(id => {
+                if (!document.querySelector(id))    return ;
+                document.querySelector(id).onclick = e => {
+                    document.querySelector(id).firstElementChild.disabled = true;
+                }
+            });*/
+            
+            /*//console.log('Livewire component mounted on client side, running API call...');
+            const apiUrl = $wire.apiUrl;
+
+            await fetch(`${apiUrl}/countries/`)*/
+        });
+
+         /*document.addEventListener('livewire:update',async (e) => {
+            console.log('country');
+            ['#countryId','#stateId','#cityId'].forEach(id => {
+                if (!document.querySelector(id))    return ;
+                document.querySelector(id).onclick = e => {
+                    document.querySelector(id).firstElementChild.disabled = true;
+                }
+            });
+         });*/
+    </script>
+    @endscript
 </div>

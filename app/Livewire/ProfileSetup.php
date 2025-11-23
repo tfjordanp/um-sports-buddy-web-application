@@ -1,14 +1,12 @@
 <?php
 
-namespace App\Http\Livewire;
+namespace App\Livewire;
 
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use Livewire\WithFileUploads; // Required trait for handling file uploads (profile picture)
-use App\Models\City;
-use App\Models\State;
-use App\Models\Country;
 use App\Models\Sport;
+use Illuminate\Support\Facades\Http;
 
 class ProfileSetup extends Component
 {
@@ -27,18 +25,21 @@ class ProfileSetup extends Component
     public $stateId;
     public $cityId;
 
+    public $apiUrl;
 
     /**
      * Mounts the component, loading initial data from the database.
      */
     public function mount()
     {
-        $this->countries = Country::all();
-        $this->sports = Sport::all();
-    }
+        $this->apiUrl = env('LOCATIONS_API_URL', 'http://localhost:3000/api');
 
-    public function __invoke(){
-        return true;
+        $this->sports = Sport::all();
+        $this->countries = json_decode(
+            Http::get("$this->apiUrl/countries/")->body()
+        )->data;
+
+        $this->dispatch('didMount');
     }
 
 
@@ -48,20 +49,48 @@ class ProfileSetup extends Component
     protected function rules()
     {
         return [
-            'countryId' => 'required|exists:country,id',
-            'stateId' => 'required|exists:state,id',
-            'cityId' => 'required|exists:city,id',
+            'countryId' => 'required',
+            'stateId' => 'required',
+            'cityId' => 'required',
             'profilePicture' => 'nullable|image|max:256', // Max 256kb file size
             'selectedSports.*.level' => '|numeric|min:1|max:4',
         ];
     }
 
+    
+
+    protected function attributes()
+    {
+        return [
+            'countryId' => 'Country', 
+            'stateId' => 'State', 
+            'cityId' => 'City', 
+        ];
+    }
+
+
+
     public function queryStates(){
-        return State::where('country_id','=',$this->countryId);
+        $this->dispatch('didMount');
+        if (!isset($this->countryId)){
+            $this->stateId = null;
+            $this->cityId = null;
+            return [];
+        }
+        return json_decode(
+            Http::get("$this->apiUrl/states/?country_id=$this->countryId")->body()
+        )->data;
     }
 
     public function queryCities(){
-        return City::where('state_id','=',$this->stateId);
+        if (!isset($this->stateId)){
+            $this->cityId = null;
+            return [];
+        }
+
+        return json_decode(
+            Http::get("$this->apiUrl/cities/?state_id=$this->stateId")->body()
+        )->data;
     }
 
     /**
@@ -70,6 +99,8 @@ class ProfileSetup extends Component
     public function saveProfile()
     {
         $this->validate();
+
+        var_dump($this->cityId,$this->stateId,$this->countryId);
 
         $user = Auth::user();
         

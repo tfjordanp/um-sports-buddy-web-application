@@ -28,7 +28,7 @@ return new class extends Migration
             $table->string('password');
             
             // Location: Geographic location of the user (city/area)
-            $table->foreignId('location_id')->nullable()->constrained('Cities')->onDelete('set null');
+            $table->foreignId('location_id')->nullable();
 
             // Profile Picture: Optional image representing the user (store file path/URL)
             $table->string('profile_picture_url')->nullable();
@@ -37,32 +37,6 @@ return new class extends Migration
            
             $table->timestamps();
         });
-        
-        try{
-            Schema::create('Countries', function (Blueprint $table) {
-                $table->id();
-                $table->string('name');
-            });
-
-            Schema::create('States', function (Blueprint $table) {
-                $table->id();
-                $table->string('name');
-
-                $table->foreignId('country_id')->constrained()->onDelete('cascade');
-            });
-
-            Schema::create('Cities', function (Blueprint $table) {
-                $table->id();
-                $table->string('name');
-                $table->float('longitude')->nullable();
-                $table->float('latitude')->nullable();
-
-                $table->foreignId('state_id')->constrained()->onDelete('cascade');
-            });
-        }
-        catch(Exception $e){
-
-        }
 
         Schema::create('Sports', function (Blueprint $table) {
             $table->id();
@@ -83,7 +57,7 @@ return new class extends Migration
             $table->string('location_details');
 
             $table->foreignId('sport_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('location_id')->constrained('Cities')->cascadeOnDelete();
+            $table->foreignId('location_id');
             $table->timestamp('scheduled_date_time');
             $table->foreignId('organizer_id')->constrained('Users','id')->cascadeOnDelete();
             $table->integer('max_participants');
@@ -162,14 +136,10 @@ return new class extends Migration
         
         Schema::dropIfExists('Users');
         Schema::dropIfExists('Sports');
-        /*Schema::dropIfExists('Countries');
-        Schema::dropIfExists('Locations');
-        */
-
 
         Schema::dropIfExists('Admin');
         Schema::dropIfExists('sessions');
-
+        
         //DB::statement("DROP DATABASE IF EXISTS $databaseName;");
     }
 };

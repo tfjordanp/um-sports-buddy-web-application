@@ -3,17 +3,22 @@
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 use Livewire\Volt\Volt;
-use App\Http\Livewire\ProfileSetup;
+use App\Livewire\ProfileSetup;
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-Route::redirect('/','/login');
+Route::redirect('/','/login')->name('home');
+
+//Route::view('/profile/setup', 'profilesetup')->name('profile.setup');
+/*Route::get('/profile-setup', function () {
+    return view('livewire.profile-setup');
+});*/
 
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');
-    //Route::get('/profile/setup', ProfileSetup::class)->name('profile.setup');
+    Route::get('/profile/setup', ProfileSetup::class)->name('profile.setup');
 
     Volt::route('settings/profile', 'settings.profile')->name('profile.edit');
     Volt::route('settings/password', 'settings.password')->name('user-password.edit');
