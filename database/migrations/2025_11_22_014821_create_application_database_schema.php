@@ -16,10 +16,10 @@ return new class extends Migration
         $databaseName = env('DB_DATABASE');
 
         //DB::statement("CREATE DATABASE IF NOT EXISTS $databaseName;"); unneccesary in sqlite
-        Schema::create('User', function (Blueprint $table) {
+        Schema::create('Users', function (Blueprint $table) {
             $table->id();
             // Username: Chosen name displayed in the app
-            $table->string('username')->unique();
+            $table->string('name')->unique();
 
             // Email: User's email address (for registration and login)
             $table->string('email')->unique();
@@ -37,11 +37,11 @@ return new class extends Migration
            
             $table->timestamps();
         });
-        Schema::create('Country', function (Blueprint $table) {
+        Schema::create('Countries', function (Blueprint $table) {
             $table->id();
             $table->string('name');
         });
-        Schema::create('Location', function (Blueprint $table) {
+        Schema::create('Locations', function (Blueprint $table) {
             $table->id();
             $table->string('location');
             $table->float('longitude')->nullable();
@@ -49,7 +49,7 @@ return new class extends Migration
 
             $table->foreignId('country_id')->constrained()->onDelete('cascade');
         });
-        Schema::create('Sport', function (Blueprint $table) {
+        Schema::create('Sports', function (Blueprint $table) {
             $table->id();
 
             $table->string('name');
@@ -60,7 +60,7 @@ return new class extends Migration
             
             $table->timestamps();
         });
-        Schema::create('Event', function (Blueprint $table) {
+        Schema::create('Events', function (Blueprint $table) {
             $table->id();
 
             $table->string('name');
@@ -69,7 +69,7 @@ return new class extends Migration
             $table->foreignId('sport_id')->constrained()->cascadeOnDelete();
             $table->foreignId('location_id')->constrained()->cascadeOnDelete();
             $table->timestamp('scheduled_date_time');
-            $table->foreignId('organize_id')->constrained('user','user_id')->cascadeOnDelete();
+            $table->foreignId('organizer_id')->constrained('Users','id')->cascadeOnDelete();
             $table->integer('max_participants');
             $table->string('profile_picture_url')->nullable();
             
@@ -112,6 +112,15 @@ return new class extends Migration
            
             $table->timestamps();
         });
+
+        Schema::create('sessions', function (Blueprint $table) {
+            $table->string('id')->unique();
+            $table->foreignId('user_id')->nullable()->index();
+            $table->string('ip_address', 45)->nullable();
+            $table->text('user_agent')->nullable();
+            $table->text('payload');
+            $table->integer('last_activity')->index();
+        });
     }
 
     /**
@@ -121,14 +130,15 @@ return new class extends Migration
     {
         $databaseName = env('DB_DATABASE');
 
-        Schema::dropIfExists('User');
-        Schema::dropIfExists('Country');
-        Schema::dropIfExists('Location');
-        Schema::dropIfExists('Sport');
-        Schema::dropIfExists('Event');
+        Schema::dropIfExists('Users');
+        Schema::dropIfExists('Countries');
+        Schema::dropIfExists('Locations');
+        Schema::dropIfExists('Sports');
+        Schema::dropIfExists('Events');
         Schema::dropIfExists('UserSportPreferences');
         Schema::dropIfExists('UserUserConnections');
         Schema::dropIfExists('Admin');
+        Schema::dropIfExists('sessions');
 
         //DB::statement("DROP DATABASE IF EXISTS $databaseName;");
     }
