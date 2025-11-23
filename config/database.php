@@ -43,6 +43,14 @@ return [
             'transaction_mode' => 'DEFERRED',
         ],
 
+        'locations_sqlite' => [
+             'driver' => 'sqlite',
+            // The absolute path to your external database file
+            'database' => 'database/world.sqlite3',
+            'prefix' => '',
+            'foreign_key_constraints' => false,
+        ],
+
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DB_URL'),
