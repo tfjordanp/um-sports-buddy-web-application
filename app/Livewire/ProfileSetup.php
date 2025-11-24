@@ -21,6 +21,9 @@ class ProfileSetup extends Component
     public $countries;
     public $sports;
 
+    public $selectedSport;
+    public $sportsLevelsPairs;
+
     public $countryId;
     public $stateId;
     public $cityId;
@@ -38,6 +41,8 @@ class ProfileSetup extends Component
         $this->countries = json_decode(
             Http::get("$this->apiUrl/countries/")->body()
         )->data;
+
+        $this->sportsLevelsPairs = [];
 
         $this->dispatch('didMount');
     }
@@ -93,6 +98,39 @@ class ProfileSetup extends Component
         )->data;
     }
 
+    public function addSportLevelPair()
+    {
+        if (empty($this->selectedSport)) {
+            session()->flash('error', 'Please select a sport first.');
+            return;
+        }
+
+        // Find the full Sport model instance using the ID
+        $sportModel = $this->sports->firstWhere('id', $this->selectedSport);
+
+        // Add the new item to the array managed by Livewire state
+        $this->sportsLevelsPairs[] = [
+            'id'    => $this->selectedSport,
+            'name'  => $sportModel->name, // Access the name property
+            'level' => 1 // Default level
+        ];
+
+        // Reset the selected sport dropdown after adding
+        $this->selectedSport = null; 
+    }
+
+    public function getRemainingSports(){
+        return $this->sports->diffUsing($this->sportsLevelsPairs, function ($obj1, $obj2) {
+            return $obj1['id'] <=> $obj2['id']; // Uses the spaceship operator for comparison
+        });
+    }
+
+    public function deleteFromPrefered($id){
+        $this->sportsLevelsPairs = array_filter($this->sportsLevelsPairs, function ($row) use ($id) {
+            return $row['id'] != $id;
+        });
+    }
+
     /**
      * Handles the form submission and saves the profile data.
      */
@@ -100,7 +138,7 @@ class ProfileSetup extends Component
     {
         $this->validate();
 
-        var_dump($this->cityId,$this->stateId,$this->countryId);
+        //var_dump($this->cityId,$this->stateId,$this->countryId);
 
         $user = Auth::user();
         
