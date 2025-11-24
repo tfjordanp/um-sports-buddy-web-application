@@ -130,7 +130,8 @@ return new class extends Migration
     {
         $databaseName = env('DB_DATABASE');
 
-        Schema::dropIfExists('UserSportPreferences');
+        Schema::dropAllTables();
+        /*Schema::dropIfExists('UserSportPreferences');
         Schema::dropIfExists('UserUserConnections');
         Schema::dropIfExists('Events');
         
@@ -138,7 +139,7 @@ return new class extends Migration
         Schema::dropIfExists('Sports');
 
         Schema::dropIfExists('Admin');
-        Schema::dropIfExists('sessions');
+        Schema::dropIfExists('sessions');*/
         
         //DB::statement("DROP DATABASE IF EXISTS $databaseName;");
     }

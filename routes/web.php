@@ -4,9 +4,10 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 use Livewire\Volt\Volt;
 use App\Livewire\ProfileSetup;
+use App\Http\Middleware\EnsureProfileIsComplete;
 
 Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified',EnsureProfileIsComplete::class])
     ->name('dashboard');
 
 Route::redirect('/','/login')->name('home');

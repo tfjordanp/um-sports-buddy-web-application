@@ -3,6 +3,8 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 use Illuminate\Support\Facades\Auth;
 use Livewire\WithFileUploads; // Required trait for handling file uploads (profile picture)
 use App\Models\Sport;
@@ -10,6 +12,8 @@ use App\Models\UserSportPreferences;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
 
+#[Layout('components.layouts.auth')]
+#[Title('Complete your profile')] 
 class ProfileSetup extends Component
 {
     use WithFileUploads;
@@ -187,7 +191,7 @@ class ProfileSetup extends Component
         // 4. Redirect the user to the main event dashboard
         session()->flash('message', 'Profile setup complete! Welcome.');
 
-        return redirect()->route('events.dashboard');
+        return redirect()->route('dashboard');
     }
 
     /**

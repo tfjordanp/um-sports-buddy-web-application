@@ -1,5 +1,5 @@
 <div class="max-w-4xl mx-auto py-10">
-    <h1 class="text-3xl font-bold mb-6">Complete Your Profile</h1>
+    <x-auth-header :title="__('Complete your profile')" :description="__('Enter your location and the sports you like below to start buddying')" />
 
     <form wire:submit.prevent="saveProfile" class="space-y-6">
 
@@ -14,7 +14,7 @@
                         <flux:select.option value="{{ $country->id }}">{{ $country->name }}</flux:select.option>
                     @endforeach
                 </flux:select>
-                @error('countryId') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                @error('countryId') <span class="text-red-500 text-sm">You need to select a country</span> @enderror
             </div>
             
             @if ($countryId)
@@ -27,7 +27,7 @@
                             <flux:select.option value="{{ $state->id }}">{{ $state->name }}</flux:select.option>
                         @endforeach
                     </flux:select>
-                    @error('stateId') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                    @error('stateId') <span class="text-red-500 text-sm">You need to select a state</span> @enderror
                 </div>
             @endif
             
@@ -41,7 +41,7 @@
                             <flux:select.option value="{{ $city->id }}">{{ $city->name }}</flux:select.option>
                         @endforeach
                     </flux:select>
-                    @error('cityId') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                    @error('cityId') <span class="text-red-500 text-sm">You need to select a city</span> @enderror
                 </div>
             @endif
             
@@ -96,9 +96,9 @@
                     </tr>
                     @endforeach
                 </table>
-                @error('sportsLevelsPairs') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
             </div>
             @endif
+            @error('sportsLevelsPairs') <span class="text-red-500 text-sm">Add at least one favorite sport</span> @enderror
             
             
         </div>
