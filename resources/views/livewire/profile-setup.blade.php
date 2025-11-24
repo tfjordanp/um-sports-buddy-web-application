@@ -71,24 +71,35 @@
                 <flux:button wire:click="addSportLevelPair" style="flex: 1;">Add</flux:button>
             </div>
 
-            <div class="flex items-center justify-between border rounded-md bg-white" style="flex-direction: column;">
-               
-                @foreach($sportsLevelsPairs as $sport)
-                    <div class="flex" style="justify-content: space-between; align-items: center; padding: 0 1rem; width: 100%;">
-                        <label style="text-align: center;" for="{{ $sport['name'] }}" class="font-medium">{{ $sport['name'] }}</label>
+            @if ($sportsLevelsPairs != null && count($sportsLevelsPairs) > 0)
+            <div class="flex items-center justify-between border rounded-md bg-white p-4" style="flex-direction: column;">
+                <table style="width:100%;">
+                    @foreach($sportsLevelsPairs as $sport)
+                    <tr>
+                        <td style="text-align: left;">
+                            <label style="text-align: center;" for="{{ $sport['name'] }}" class="font-medium">{{ $sport['name'] }}</label>
+                        </td>
                         
-                        {{-- Use Flux Select for Level within the loop --}}
-                        <select style=" text-align: center;" class="p-4" id="{{ $sport['name'] }}" selected={{ $sport['level'] }} wire:model="selectedSports.{{ $sport['id'] }}.level" placeholder="Select level" class="w-40">
-                            <option value="1">Novice</option>
-                            <option value="2">Amateur</option>
-                            <option value="3">Semi Pro</option>
-                            <option value="4">Pro</option>
-                        </select>
+                        <td style="text-align: center;">
+                            {{-- Use Flux Select for Level within the loop --}}
+                            <select style=" text-align: center;" class="p-4" id="{{ $sport['name'] }}" selected={{ $sport['level'] }} wire:model="selectedSports.{{ $sport['id'] }}.level" placeholder="Select level" class="w-40">
+                                <option value="1">Novice</option>
+                                <option value="2">Amateur</option>
+                                <option value="3">Semi Pro</option>
+                                <option value="4">Pro</option>
+                            </select>
+                        </td>
 
-                        <flux:button variant="danger" style="" wire:click="deleteFromPrefered({{ $sport['id'] }})">Delete</flux:button>
-                    </div>
-                @endforeach
+                        <td style="text-align: right;">
+                            <flux:button variant="danger" style="" wire:click="deleteFromPrefered({{ $sport['id'] }})">Delete</flux:button>
+                        </td>
+                    </tr>
+                    @endforeach
+                </table>
+                @error('sportsLevelsPairs') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
             </div>
+            @endif
+            
             
         </div>
 

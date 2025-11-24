@@ -6,7 +6,9 @@ use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use Livewire\WithFileUploads; // Required trait for handling file uploads (profile picture)
 use App\Models\Sport;
+use App\Models\UserSportPreferences;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Validation\ValidationException;
 
 class ProfileSetup extends Component
 {
@@ -42,7 +44,7 @@ class ProfileSetup extends Component
             Http::get("$this->apiUrl/countries/")->body()
         )->data;
 
-        $this->sportsLevelsPairs = [];
+        $this->sportsLevelsPairs = null;
 
         $this->dispatch('didMount');
     }
@@ -58,7 +60,9 @@ class ProfileSetup extends Component
             'stateId' => 'required',
             'cityId' => 'required',
             'profilePicture' => 'nullable|image|max:256', // Max 256kb file size
-            'selectedSports.*.level' => '|numeric|min:1|max:4',
+            /*'selectedSports.*.level' => '|numeric|min:1|max:4',*/
+            'sportsLevelsPairs.*.level' => '|numeric|min:1|max:4',
+            'sportsLevelsPairs' => 'required|list|min:1|between:1,9999', 
         ];
     }
 
@@ -108,12 +112,21 @@ class ProfileSetup extends Component
         // Find the full Sport model instance using the ID
         $sportModel = $this->sports->firstWhere('id', $this->selectedSport);
 
+        if ($this->sportsLevelsPairs == null){
+            $this->sportsLevelsPairs = [];
+        }
+
         // Add the new item to the array managed by Livewire state
-        $this->sportsLevelsPairs[] = [
+        array_push($this->sportsLevelsPairs,[
             'id'    => $this->selectedSport,
             'name'  => $sportModel->name, // Access the name property
             'level' => 1 // Default level
-        ];
+        ]);
+        /*$this->sportsLevelsPairs[] = [
+            'id'    => $this->selectedSport,
+            'name'  => $sportModel->name, // Access the name property
+            'level' => 1 // Default level
+        ];*/
 
         // Reset the selected sport dropdown after adding
         $this->selectedSport = null; 
@@ -129,6 +142,10 @@ class ProfileSetup extends Component
         $this->sportsLevelsPairs = array_filter($this->sportsLevelsPairs, function ($row) use ($id) {
             return $row['id'] != $id;
         });
+
+        if (count($this->sportsLevelsPairs) <= 0){
+            $this->sportsLevelsPairs = null;
+        }
     }
 
     /**
@@ -138,6 +155,13 @@ class ProfileSetup extends Component
     {
         $this->validate();
 
+        //var_dump(count($this->sportsLevelsPairs));
+
+        if (count($this->sportsLevelsPairs) <= 0){
+            throw new ValidationException("Select atleast one favorite sport.");
+            return ;
+        }
+
         //var_dump($this->cityId,$this->stateId,$this->countryId);
 
         $user = Auth::user();
@@ -145,22 +169,20 @@ class ProfileSetup extends Component
         // 1. Handle Profile Picture Upload
         if ($this->profilePicture) {
             $path = $this->profilePicture->store('profile-photos', 'public');
-            $user->profile_picture = $path;
+            $user->profile_picture_url = $path;
         }
 
         // 2. Set the default location
         $user->location_id = $this->cityId;
         $user->save(); // Save the location_id and picture path to the users table
 
-        // 3. Sync Preferred Sports and Levels
-        // Filter out sports where the user didn't select a level, then format for the pivot table
-        $sportsDataToSync = collect($this->selectedSports)
-            ->filter(fn ($s) => !empty($s['level']))
-            ->map(fn ($s) => ['level' => $s['level']])
-            ->toArray();
-            
-        // Use sync() to manage the many-to-many relationship in the user_sports pivot table
-        $user->sports()->sync($sportsDataToSync);
+        foreach ($this->sportsLevelsPairs as $sport){
+            UserSportPreferences::insert([
+                'sport_id' => $sport['id'],
+                'user_id' => $user->id,
+                'level' => $sport['level'],
+            ]);
+        }
 
         // 4. Redirect the user to the main event dashboard
         session()->flash('message', 'Profile setup complete! Welcome.');
