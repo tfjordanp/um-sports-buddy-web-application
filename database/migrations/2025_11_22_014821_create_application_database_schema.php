@@ -33,6 +33,10 @@ return new class extends Migration
             // Profile Picture: Optional image representing the user (store file path/URL)
             $table->string('profile_picture_url')->nullable();
 
+            $table->string('two_factor_secret')->nullable();
+            $table->string('two_factor_recovery_codes')->nullable();
+            $table->string('two_factor_confirmed_at')->nullable();
+
             $table->rememberToken();
            
             $table->timestamps();
