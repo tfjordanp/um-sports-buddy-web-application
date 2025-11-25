@@ -9,7 +9,7 @@ Laravel Backend + Livewire and Flux Frontend.
 
 
 <h1>DEMO VIDEO</h1>
-<video src="https://github.com/tfjordanp/um-sports-buddy-web-application/blob/main/assets/UM-Internship-SportsBuddyApp-Demo.webm?raw=true"></video>
+<video src="https://github.com/tfjordanp/um-sports-buddy-web-application/blob/main/assets/UM-Internship-SportsBuddyApp-Demo.webm?raw=true" width="640"></video>
 
 <h1>DEMO PICS</h1>
 <img src="https://github.com/tfjordanp/um-sports-buddy-web-application/blob/main/assets/images/dashboard.PNG" width="400"/>
