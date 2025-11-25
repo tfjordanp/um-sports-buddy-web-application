@@ -42,11 +42,13 @@ class EventManager extends Component
             $query->where('location_id', $this->selectedLocationId);
         }
         
-        foreach (Auth::user()->preferredSports()->get() as $sport){
-            $query->orWhere('sport_id','=',$sport->id);
-        }
+        $ids = Auth::user()->preferredSports()->get()->map(function ($sp){
+            return $sp->id;
+        });
 
-        $query->orderByDesc('scheduled_date_time');
+        $query->whereIn('sport_id',$ids);
+
+        $query->orderBy('scheduled_date_time');
 
         // Order by the scheduled time, eager load relationships
         $this->events = $query->with('users', 'organizer', 'sport')

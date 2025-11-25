@@ -15,35 +15,68 @@
             </div>
         @endif
 
+        <style>
+            /* Base Styles (Mobile First) */
+            .event-grid-container {
+                display: grid;
+                /* 1 column by default */
+                grid-template-columns: repeat(1, 1fr); 
+                /* Gap between items (1.5rem is equal to Tailwind's gap-6) */
+                gap: 1.5rem; 
+            }
+
+            /* Medium Breakpoint (md:grid-cols-2) */
+            /* Assuming a breakpoint of 768px for medium screens (Tailwind default) */
+            @media (min-width: 768px) {
+                .event-grid-container {
+                    /* 2 columns on medium screens and up */
+                    grid-template-columns: repeat(2, 1fr); 
+                }
+            }
+
+            /* Large Breakpoint (lg:grid-cols-3) */
+            /* Assuming a breakpoint of 1024px for large screens (Tailwind default) */
+            @media (min-width: 1024px) {
+                .event-grid-container {
+                    /* 3 columns on large screens and up */
+                    grid-template-columns: repeat(3, 1fr);
+                }
+            }
+        </style>
+
         <!-- Event List -->
-        <div class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 event-grid-container">
             @foreach($events as $event)
-                <div class="p-4 border rounded-lg shadow-sm bg-white">
-                    <div class="flex space-x-4" style="justify-content: space-between; align-items: center;">
-                        <!-- Event Image -->
-                        @if(true)
-                            <img style="width: 24x; height: 24px;" src="{{/* Storage::url($event->profile_picture_url) || */$event->sport->profile_picture_url }}" alt="{{ $event->title }}" class="w-24 h-24 object-cover rounded-lg">
-                        @else
-                            <div class="w-24 h-24 bg-gray-200 flex items-center justify-center rounded-lg">No Image</div>
-                        @endif
-                        
-                        <div class="flex-grow">
-                            <h2 class="text-xl font-semibold">{{ $event->title }}</h2>
-                            <p class="text-sm text-gray-600">
-                                <strong>Sport:</strong> {{ $event->sport->name ?? 'N/A' }}<br>
-                                <strong>When:</strong> {{ $event->scheduled_date_time->format('Y-m-d') }}<br>
-                                <strong>Where:</strong> {{ $event->location_details }}
-                            </p>
-                            <!--<p class="mt-1">{{ $event->description }}</p>-->
-                            <p class="text-sm text-gray-500">
-                                <b>Organizer:</b> {{ $event->organizer->name ?? 'N/A' }} <br>
-                                {{ $event->users->count() }} / {{ $event->max_participants }} attendees
-                            </p>
+                <!-- Individual Bootstrap-like Card -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col " style="max-width: 25rem;" >
+                    
+                    <!-- Card Image/Header -->
+                    @if(true/*$event->profile_picture_url && Storage::disk('public')->exists($event->profile_picture_url)*/)
+                        <img src="{{ /*Storage::url($event->profile_picture_url)*/ $event->sport->profile_picture_url }}" alt="{{ $event->title }}" class="h-48 w-full object-cover" style="height: 24rem">
+                    @else
+                        <div class="h-48 bg-gray-300 flex items-center justify-center text-gray-600">
+                            No Image Available
                         </div>
+                    @endif
+
+                    <!-- Card Body -->
+                    <div class="p-5 flex-grow" style="padding-left: 4px;">
+                        <h2 class="text-2xl font-bold mb-2">{{ $event->title }}</h2>
+                        <p class="text-sm text-gray-500 mb-4">
+                            <strong>Sport:</strong> {{ $event->sport->name ?? 'N/A' }}
+                        </p>
+                        <p class="text-gray-700 mb-4">{{ Str::limit($event->description, 100) }}</p>
+
+                        <ul class="text-sm text-gray-600 space-y-2">
+                            <li><strong>When:</strong> {{ $event->scheduled_date_time->diffForHumans() }}</li>
+                            <li><strong>Where:</strong> {{ $event->location_details }}</li>
+                            <li><strong>Organizer:</strong> {{ $event->organizer->name ?? 'N/A' }}</li>
+                            <li><strong>Attendees:</strong> {{ $event->users->count() }} / {{ $event->max_participants }}</li>
+                        </ul>
                     </div>
 
-                    <!-- ... (Apply/Unapply/Full logic and buttons remain the same) ... -->
-                    <div class="mt-2">
+                    <!-- Card Footer/Actions -->
+                    <div class="mt-2" style="margin-left: 4px; margin-bottom: 4px;">
                         @php
                             $isFull = $event->users->count() >= $event->max_participants;
                             $hasApplied = Auth::user()->events()->where('event_id', $event->id)->exists();
