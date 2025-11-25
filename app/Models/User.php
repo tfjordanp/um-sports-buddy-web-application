@@ -13,6 +13,7 @@ use App\Models\UserSportPreferences;
 
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Http;
 
 class User extends Authenticatable
 {
@@ -84,5 +85,13 @@ class User extends Authenticatable
 
     public function preferredSports(): BelongsToMany {
         return $this->belongsToMany(Sport::class,'UserSportPreferences');
+    }
+
+    public function locationStr(){
+        if ($this->location_id == null)     return '';
+        $apiUrl = env('LOCATIONS_API_URL');
+        return json_decode(
+            Http::get("$apiUrl/cities/$this->location_id")->body()
+        )->data->name;
     }
 }

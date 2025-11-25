@@ -2,7 +2,15 @@
 <div class="min-h-screen" style="background-image: url('{{ asset("images/sports-bg.jpeg") }}'); background-size: cover; background-position: center;">
     <div class="bg-white bg-opacity-90 p-8">
         <!-- ... (Flashes, Location Selector HTML remain the same) ... -->
-        <h1 class="text-5xl mb-6 font-bold text-gray-800">Sports Events</h1>
+        <div style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 2rem;">
+            <h1 class="text-5xl mb-6 font-bold text-gray-800">Sports Events</h1>
+            <div>
+                <span><b>Favorite Sports: </b>{{ Auth::user()->preferredSports->map(function($sport){return $sport->name;})->implode(', ') }}</span><br>
+                <span><b>Location: </b>{{ Auth::user()->locationStr() }}</span><br>
+                <span>Applied for <b>{{ Auth::user()->events()->count() }}</b> event(s)</span><br>
+                <span>Created <b>{{ Auth::user()->organizedEvents()->count() }}</b> event(s)</span><br>
+            </div>
+        </div>
 
         @if (session()->has('message'))
             <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
@@ -80,6 +88,7 @@
                         @php
                             $isFull = $event->users->count() >= $event->max_participants;
                             $hasApplied = Auth::user()->events()->where('event_id', $event->id)->exists();
+                            $isOwn = $event->organizer_id == Auth::user()->id;
                         @endphp
                         
                         @if ($hasApplied)
@@ -88,6 +97,10 @@
                             </button>
                         @elseif ($isFull)
                             <span class="text-red-500">Event Full</span>
+                        @elseif ($isOwn)
+                            <button wire:click="deleteEvent({{ $event->id }})" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
+                                Delete
+                            </button>
                         @else
                             <button wire:click="applyToEvent({{ $event->id }})" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
                                 Apply
@@ -98,56 +111,75 @@
             @endforeach
         </div>
 
-        <!-- Create Event Button/Form -->
-        <button wire:click="$toggle('isCreatingEvent')" class="mt-6 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
-            {{ $isCreatingEvent ? 'Cancel Create Event' : 'Create New Event' }}
-        </button>
+        <style>
+            button#create-event:hover{
+                opacity: 1;
+                color: grey;
+            }
+        </style>
 
-        @if($isCreatingEvent)
-            <div class="mt-4 p-4 border rounded-lg shadow-lg bg-white">
-                <h2 class="text-xl mb-2">New Event Form</h2>
+        <flux:modal.trigger name="create-event">
+            <flux:button id="create-event" style="position: fixed; bottom: 2rem; right: 2rem; border-radius: 100%; width: 100px; height: 100px; background: lightgreen; cursor: pointer; opacity: 0.95;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-10">
+                    <path d="M12.75 12.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM7.5 15.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM8.25 17.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM9.75 15.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM10.5 17.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12 15.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM12.75 17.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM14.25 15.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM15 17.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM16.5 15.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM15 12.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM16.5 13.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" />
+                    <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 0 1 7.5 3v1.5h9V3A.75.75 0 0 1 18 3v1.5h.75a3 3 0 0 1 3 3v11.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V7.5a3 3 0 0 1 3-3H6V3a.75.75 0 0 1 .75-.75Zm13.5 9a1.5 1.5 0 0 0-1.5-1.5H5.25a1.5 1.5 0 0 0-1.5 1.5v7.5a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5v-7.5Z" clip-rule="evenodd" />
+                </svg>
+            </flux:button>
+        </flux:modal.trigger>
+
+        <flux:modal name="create-event" class="md:w-96">
+            <div class="space-y-6">
+                <div>
+                    <flux:heading size="lg">Organize a new event</flux:heading>
+                    <flux:text class="mt-2">Invite several athletes to your sport event</flux:text>
+                </div>
+                <style>
+                    form > div{
+                        margin-bottom: 1rem;
+                    }
+                </style>
                 <form wire:submit.prevent="createEvent">
-                    <!-- Title -->
-                    <div class="mb-3">
-                        <label for="title">Title:</label>
-                        <input type="text" wire:model="newEventTitle" id="title" class="form-input mt-1 block w-full" required>
+                    <div>
+                        <flux:input label="Title" wire:model="newEventTitle" placeholder="e.g Kickout Rush" required/>
                         @error('newEventTitle') <span class="text-red-500">{{ $message }}</span> @enderror
                     </div>
-                    
-                    <!-- Description -->
-                    <div class="mb-3">
-                        <label for="description">Description:</label>
-                        <textarea wire:model="newEventDescription" id="description" class="form-textarea mt-1 block w-full" required></textarea>
+                    <div>
+                        <flux:input label="Description" wire:model="newEventDescription" placeholder="e.g Let's exercise together"/>
                         @error('newEventDescription') <span class="text-red-500">{{ $message }}</span> @enderror
                     </div>
-
-                    <!-- Scheduled Date/Time -->
-                    <div class="mb-3">
-                        <label for="scheduled_date_time">Date & Time:</label>
-                        <!-- Note: 'datetime-local' requires a specific format that Carbon handles in the model cast -->
-                        <input type="datetime-local" wire:model="newEventScheduledDateTime" id="scheduled_date_time" class="form-input mt-1 block w-full" required>
+                    <div>
+                        @php
+                            // Create a Carbon instance for the current time
+                            $tommorow = Carbon\Carbon::now()->addDays(1);
+                        @endphp
+                        <flux:input label="Date & Time" min="{{ $tommorow->format('Y-m-d') }}" type="datetime-local" wire:model="newEventScheduledDateTime" type="date" required/>
                         @error('newEventScheduledDateTime') <span class="text-red-500">{{ $message }}</span> @enderror
                     </div>
-                    
-                    <!-- Capacity -->
-                    <div class="mb-3">
-                        <label for="capacity">Capacity:</label>
-                        <input type="number" wire:model="newEventCapacity" id="capacity" class="form-input mt-1 block w-full" min="1" required>
+                    <div>
+                        <flux:input min="5" max="9999" value="5" label="Capacity" type="number" wire:model="newEventCapacity" required/>
                         @error('newEventCapacity') <span class="text-red-500">{{ $message }}</span> @enderror
                     </div>
-
-                    <!-- Location Details (Specific address/field location) -->
-                    <div class="mb-3">
-                        <label for="location_details">Specific Location Details:</label>
-                        <input type="text" wire:model="newEventLocationDetails" id="location_details" class="form-input mt-1 block w-full" placeholder="e.g., Field 4 at City Park" required>
+                    <div>
+                        <flux:input label="Specific Location Details" wire:model="newEventLocationDetails" placeholder="Stadium entry" required/>
                         @error('newEventLocationDetails') <span class="text-red-500">{{ $message }}</span> @enderror
                     </div>
 
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
-                        Save Event
-                    </button>
+                    <div>
+                        <flux:select wire:model.live="newEventSportId" label="Sport" id="newEventSportId" placeholder="Select a Sport">
+                            {{-- Assumes $locations is passed from the component logic --}}
+                            @foreach(Auth::user()->preferredSports as $sport)
+                                <flux:select.option value="{{ $sport->id }}">{{ $sport->name }}</flux:select.option>
+                            @endforeach
+                        </flux:select>
+                        @error('newEventSportId') <span class="text-red-500">{{ "You need to select a sport" }}</span> @enderror
+                    </div>
+                    
+                    <div class="flex">
+                        <flux:spacer />
+                        <flux:button type="submit" variant="primary">Create</flux:button>
+                    </div>
                 </form>
             </div>
-        @endif
+        </flux:modal>
     </div>
 </div>

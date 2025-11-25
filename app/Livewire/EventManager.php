@@ -89,6 +89,12 @@ class EventManager extends Component
         }
     }
 
+    public function deleteEvent($eventId){
+        $event = Event::findOrFail($eventId);
+        $event->delete();
+        $this->loadEvents(); // Refresh event list
+    }
+
     public function createEvent()
     {
         $this->validate([
@@ -112,6 +118,9 @@ class EventManager extends Component
         ]);
 
         session()->flash('message', 'Event created successfully!');
+        
+        $this->modal('create-event')->close();
+
         $this->reset(['newEventTitle', 'newEventDescription', 'newEventCapacity', 'newEventLocationId', 'newEventSportId', 'newEventScheduledDateTime', 'newEventLocationDetails', 'isCreatingEvent']);
         $this->loadEvents(); // Refresh event list
     }

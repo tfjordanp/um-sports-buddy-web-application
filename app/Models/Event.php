@@ -11,6 +11,7 @@ class Event extends Model
 {
     // ... other properties
 
+    protected $guarded = [];
     protected $casts = [
         'scheduled_date_time' => 'datetime',
     ];
