@@ -2,7 +2,7 @@
 <div class="min-h-screen" style="background-image: url('{{ asset("images/sports-bg.jpeg") }}'); background-size: cover; background-position: center;">
     <div class="bg-white bg-opacity-90 p-8">
         <!-- ... (Flashes, Location Selector HTML remain the same) ... -->
-        <h1 class="text-3xl mb-4">Sports Events</h1>
+        <h1 class="text-5xl mb-6 font-bold text-gray-800">Sports Events</h1>
 
         @if (session()->has('message'))
             <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
