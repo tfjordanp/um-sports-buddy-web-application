@@ -52,7 +52,7 @@ return new class extends Migration
         Schema::create('Events', function (Blueprint $table) {
             $table->id();
 
-            $table->string('name');
+            $table->string('title');
             $table->string('description');
             $table->string('location_details');
 
@@ -79,7 +79,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('UserEventApplication', function (Blueprint $table) {
+        Schema::create('UserEventApplications', function (Blueprint $table) {
             $table->id();
 
             $table->foreignId('event_id')->constrained()->cascadeOnDelete();

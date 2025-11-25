@@ -11,6 +11,9 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 
 use App\Models\UserSportPreferences;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -67,5 +70,19 @@ class User extends Authenticatable
     public function hasCompletedProfile(){
         return UserSportPreferences::all()->where('user_id','=',$this->id)->count() > 0 
         && $this->location_id != null;
+    }
+
+    public function organizedEvents(): HasMany
+    {
+        return $this->hasMany(Event::class, 'organizer_id');
+    }
+
+    public function events(): BelongsToMany
+    {
+        return $this->belongsToMany(Event::class,'UserEventApplications');
+    }
+
+    public function preferredSports(): BelongsToMany {
+        return $this->belongsToMany(Sport::class,'UserSportPreferences');
     }
 }

@@ -1,16 +1,25 @@
 <?php
 
+
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 use Livewire\Volt\Volt;
+
 use App\Livewire\ProfileSetup;
+use App\Livewire\EventManager;
+
 use App\Http\Middleware\EnsureProfileIsComplete;
 
-Route::view('dashboard', 'dashboard')
+/*Route::view('dashboard', 'dashboard')
+    ->middleware(['auth', 'verified',EnsureProfileIsComplete::class])
+    ->name('dashboard');*/
+
+Route::get('/dashboard', EventManager::class)
     ->middleware(['auth', 'verified',EnsureProfileIsComplete::class])
     ->name('dashboard');
 
 Route::redirect('/','/login')->name('home');
+//Route::redirect('/dashboard','/event-manager');
 
 //Route::view('/profile/setup', 'profilesetup')->name('profile.setup');
 /*Route::get('/profile-setup', function () {
