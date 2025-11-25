@@ -4,8 +4,8 @@
         <!-- ... (Flashes, Location Selector HTML remain the same) ... -->
         <div style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 2rem;">
             <h1 class="text-5xl mb-6 font-bold text-gray-800">Sports Events</h1>
-            <div>
-                <span><b>Favorite Sports: </b>{{ Auth::user()->preferredSports->map(function($sport){return $sport->name;})->implode(', ') }}</span><br>
+            <div style="max-width: 25rem;">
+                <span><!--<b>Favorite Sports: </b>-->{{ Auth::user()->preferredSports->map(function($sport){return $sport->name;})->implode(', ') }}</span><br>
                 <span><b>Location: </b>{{ Auth::user()->locationStr() }}</span><br>
                 <span>Applied for <b>{{ Auth::user()->events()->count() }}</b> event(s)</span><br>
                 <span>Created <b>{{ Auth::user()->organizedEvents()->count() }}</b> event(s)</span><br>
